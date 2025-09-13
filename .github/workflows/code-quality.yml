@@ -1,0 +1,116 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Check code formatting
+      run: |
+        echo "Checking code formatting..."
+        flutter format --output=none --set-exit-if-changed .
+        echo "✅ Code formatting is correct"
+        
+    - name: Analyze code
+      run: |
+        echo "Analyzing code..."
+        flutter analyze --fatal-infos
+        echo "✅ Code analysis passed"
+        
+    - name: Check for unused dependencies
+      run: |
+        echo "Checking for unused dependencies..."
+        flutter pub deps --json | jq -r '.packages[] | select(.kind == "direct") | .name' | while read dep; do
+          if ! grep -r "import.*$dep" lib/ packages/*/lib/ --include="*.dart" > /dev/null 2>&1; then
+            echo "⚠️  Potentially unused dependency: $dep"
+          fi
+        done
+        echo "✅ Dependency check completed"
+        
+    - name: Check for large files
+      run: |
+        echo "Checking for large files..."
+        find . -name "*.dart" -size +1000k -exec echo "⚠️  Large file found: {}" \;
+        echo "✅ Large file check completed"
+        
+    - name: Check for TODO/FIXME comments
+      run: |
+        echo "Checking for TODO/FIXME comments..."
+        todo_count=$(grep -r "TODO\|FIXME" lib/ packages/*/lib/ --include="*.dart" | wc -l)
+        if [ $todo_count -gt 0 ]; then
+          echo "📝 Found $todo_count TODO/FIXME comments:"
+          grep -r "TODO\|FIXME" lib/ packages/*/lib/ --include="*.dart" | head -10
+        else
+          echo "✅ No TODO/FIXME comments found"
+        fi
+        
+    - name: Check for print statements
+      run: |
+        echo "Checking for print statements..."
+        print_count=$(grep -r "print(" lib/ packages/*/lib/ --include="*.dart" | wc -l)
+        if [ $print_count -gt 0 ]; then
+          echo "⚠️  Found $print_count print statements (consider using a logger):"
+          grep -r "print(" lib/ packages/*/lib/ --include="*.dart" | head -5
+        else
+          echo "✅ No print statements found"
+        fi
+        
+    - name: Check for hardcoded strings
+      run: |
+        echo "Checking for hardcoded strings..."
+        hardcoded_count=$(grep -r '"[A-Z][a-z].*"' lib/ packages/*/lib/ --include="*.dart" | grep -v "//" | wc -l)
+        if [ $hardcoded_count -gt 0 ]; then
+          echo "⚠️  Found $hardcoded_count potentially hardcoded strings (consider using localization):"
+          grep -r '"[A-Z][a-z].*"' lib/ packages/*/lib/ --include="*.dart" | grep -v "//" | head -5
+        else
+          echo "✅ No hardcoded strings found"
+        fi
+        
+    - name: Generate code coverage
+      run: |
+        echo "Generating code coverage..."
+        flutter test --coverage
+        echo "✅ Code coverage generated"
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true

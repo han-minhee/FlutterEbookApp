@@ -1,0 +1,158 @@
+name: Issue Management
+
+on:
+  issues:
+    types: [opened, labeled, unlabeled]
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize, closed]
+
+jobs:
+  issue-triage:
+    name: Issue Triage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Add labels based on issue content
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const labels = [];
+          
+          // Add labels based on issue content
+          if (issue.title.toLowerCase().includes('bug') || issue.body.toLowerCase().includes('bug')) {
+            labels.push('bug');
+          }
+          if (issue.title.toLowerCase().includes('feature') || issue.body.toLowerCase().includes('feature')) {
+            labels.push('enhancement');
+          }
+          if (issue.title.toLowerCase().includes('documentation') || issue.body.toLowerCase().includes('documentation')) {
+            labels.push('documentation');
+          }
+          if (issue.title.toLowerCase().includes('performance') || issue.body.toLowerCase().includes('performance')) {
+            labels.push('performance');
+          }
+          if (issue.title.toLowerCase().includes('security') || issue.body.toLowerCase().includes('security')) {
+            labels.push('security');
+          }
+          
+          // Add priority labels
+          if (issue.title.toLowerCase().includes('urgent') || issue.body.toLowerCase().includes('urgent')) {
+            labels.push('priority: high');
+          } else if (issue.title.toLowerCase().includes('low') || issue.body.toLowerCase().includes('low priority')) {
+            labels.push('priority: low');
+          } else {
+            labels.push('priority: medium');
+          }
+          
+          // Add status label
+          labels.push('status: needs-triage');
+          
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labels
+            });
+          }
+
+  pr-management:
+    name: PR Management
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Add labels based on PR content
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const labels = [];
+          
+          // Add labels based on PR content
+          if (pr.title.toLowerCase().includes('fix') || pr.body.toLowerCase().includes('fix')) {
+            labels.push('type: bugfix');
+          }
+          if (pr.title.toLowerCase().includes('feat') || pr.body.toLowerCase().includes('feature')) {
+            labels.push('type: feature');
+          }
+          if (pr.title.toLowerCase().includes('refactor') || pr.body.toLowerCase().includes('refactor')) {
+            labels.push('type: refactor');
+          }
+          if (pr.title.toLowerCase().includes('docs') || pr.body.toLowerCase().includes('documentation')) {
+            labels.push('type: documentation');
+          }
+          if (pr.title.toLowerCase().includes('test') || pr.body.toLowerCase().includes('test')) {
+            labels.push('type: test');
+          }
+          if (pr.title.toLowerCase().includes('ci') || pr.body.toLowerCase().includes('ci')) {
+            labels.push('type: ci');
+          }
+          
+          // Add size labels based on changes
+          const changes = pr.additions + pr.deletions;
+          if (changes < 50) {
+            labels.push('size: small');
+          } else if (changes < 200) {
+            labels.push('size: medium');
+          } else {
+            labels.push('size: large');
+          }
+          
+          // Add status label
+          labels.push('status: needs-review');
+          
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: labels
+            });
+          }
+          
+    - name: Check PR description
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          
+          if (!pr.body || pr.body.length < 50) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: `👋 Thanks for your PR! 
+
+Please add a more detailed description explaining:
+- What changes you made
+- Why you made them
+- How to test the changes
+- Any breaking changes
+
+This helps reviewers understand your changes better.`
+            });
+          }
+          
+    - name: Check for breaking changes
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          
+          if (pr.body && pr.body.toLowerCase().includes('breaking change')) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: ['breaking-change']
+            });
+          }

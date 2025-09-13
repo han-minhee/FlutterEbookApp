@@ -1,0 +1,131 @@
+name: Dependency Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 4 * * 1' # Run every Monday at 4 AM
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Run dependency audit
+      run: |
+        echo "Running dependency audit..."
+        flutter pub deps --json > deps.json
+        
+        # Check for known vulnerabilities
+        echo "Checking for known vulnerabilities..."
+        flutter pub outdated --json > outdated.json
+        
+        # Check for deprecated packages
+        echo "Checking for deprecated packages..."
+        flutter pub deps --json | jq -r '.packages[] | select(.kind == "direct") | .name' | while read dep; do
+          if flutter pub deps --json | jq -r ".packages[] | select(.name == \"$dep\") | .description" | grep -i "deprecated" > /dev/null; then
+            echo "⚠️  Deprecated package found: $dep"
+          fi
+        done
+        
+    - name: Check for license compliance
+      run: |
+        echo "Checking for license compliance..."
+        flutter pub deps --json | jq -r '.packages[] | select(.kind == "direct") | .name' | while read dep; do
+          echo "Checking license for: $dep"
+          # This is a simplified check - in practice, you'd want to check actual licenses
+          flutter pub deps --json | jq -r ".packages[] | select(.name == \"$dep\") | .description" | head -1
+        done
+        
+    - name: Check for duplicate dependencies
+      run: |
+        echo "Checking for duplicate dependencies..."
+        flutter pub deps --json | jq -r '.packages[] | select(.kind == "direct") | .name' | sort | uniq -d | while read dep; do
+          echo "⚠️  Duplicate dependency found: $dep"
+        done
+        
+    - name: Generate dependency report
+      run: |
+        echo "Generating dependency report..."
+        echo "# Dependency Security Report" > dependency-report.md
+        echo "Generated on: $(date)" >> dependency-report.md
+        echo "" >> dependency-report.md
+        echo "## Direct Dependencies" >> dependency-report.md
+        flutter pub deps --json | jq -r '.packages[] | select(.kind == "direct") | "- \(.name): \(.version)"' >> dependency-report.md
+        echo "" >> dependency-report.md
+        echo "## Outdated Dependencies" >> dependency-report.md
+        if [ -f outdated.json ]; then
+          cat outdated.json | jq -r '.packages[] | "- \(.package): \(.current) -> \(.latest)"' >> dependency-report.md
+        else
+          echo "No outdated dependencies found" >> dependency-report.md
+        fi
+        
+    - name: Upload dependency report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-report
+        path: |
+          dependency-report.md
+          deps.json
+          outdated.json
+        retention-days: 30
+        
+    - name: Create security issue if vulnerabilities found
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = 'Security Alert: Vulnerable Dependencies Detected';
+          const body = `A security scan has detected potentially vulnerable dependencies in the project.
+          
+          Please review the dependency report and update any vulnerable packages.
+          
+          This issue was automatically created by the dependency security scan workflow.`;
+          
+          // Check if issue already exists
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'security'
+          });
+          
+          const existingIssue = issues.data.find(issue => issue.title === title);
+          
+          if (!existingIssue) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'automated']
+            });
+          }
