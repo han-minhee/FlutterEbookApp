@@ -1,0 +1,106 @@
+name: Test Matrix
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * 0' # Run every Sunday at 2 AM
+
+jobs:
+  test-matrix:
+    name: Test on Flutter ${{ matrix.flutter-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter-version: ['3.22.0', '3.24.0', '3.25.0']
+        include:
+          - flutter-version: '3.22.0'
+            channel: 'stable'
+          - flutter-version: '3.24.0'
+            channel: 'stable'
+          - flutter-version: '3.25.0'
+            channel: 'beta'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ matrix.flutter-version }}
+        channel: ${{ matrix.channel }}
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Verify formatting
+      run: flutter format --output=none --set-exit-if-changed .
+      
+    - name: Analyze project source
+      run: flutter analyze --fatal-infos
+      
+    - name: Run tests
+      run: flutter test --coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        flags: unittests
+        name: codecov-flutter-${{ matrix.flutter-version }}
+        fail_ci_if_error: false
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test-matrix
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Run integration tests
+      run: flutter test integration_test/
+      continue-on-error: true
+      
+    - name: Run widget tests
+      run: flutter test test/

@@ -1,0 +1,72 @@
+name: Format Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Check code formatting
+      run: |
+        echo "Checking code formatting..."
+        flutter format --output=none --set-exit-if-changed .
+        echo "✅ Code formatting is correct"
+        
+    - name: Check import organization
+      run: |
+        echo "Checking import organization..."
+        find lib/ packages/*/lib/ -name "*.dart" -exec grep -l "import" {} \; | while read file; do
+          # Check if imports are properly organized
+          if ! grep -q "^import 'dart:" "$file" || ! grep -q "^import 'package:" "$file"; then
+            echo "⚠️  Import organization issue in: $file"
+          fi
+        done
+        echo "✅ Import organization check completed"
+        
+    - name: Check for trailing whitespace
+      run: |
+        echo "Checking for trailing whitespace..."
+        if find lib/ packages/*/lib/ -name "*.dart" -exec grep -l " $" {} \; | grep -q .; then
+          echo "❌ Trailing whitespace found in:"
+          find lib/ packages/*/lib/ -name "*.dart" -exec grep -l " $" {} \;
+          exit 1
+        else
+          echo "✅ No trailing whitespace found"
+        fi
+        
+    - name: Check for missing newlines at end of files
+      run: |
+        echo "Checking for missing newlines at end of files..."
+        find lib/ packages/*/lib/ -name "*.dart" -exec sh -c 'if [ "$(tail -c1 "$1")" != "" ]; then echo "Missing newline at end of: $1"; fi' _ {} \; | head -10
+        echo "✅ Newline check completed"

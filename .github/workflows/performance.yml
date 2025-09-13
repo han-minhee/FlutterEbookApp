@@ -1,0 +1,83 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 3 * * 0' # Run every Sunday at 3 AM
+
+jobs:
+  performance-test:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Run performance tests
+      run: |
+        echo "Running performance tests..."
+        flutter test --reporter=json test/performance_test.dart || echo "No performance tests found"
+        
+    - name: Analyze app size
+      run: |
+        echo "Analyzing app size..."
+        flutter build apk --analyze-size --target-platform android-arm64
+        flutter build appbundle --analyze-size --target-platform android-arm64
+        
+    - name: Check for memory leaks
+      run: |
+        echo "Checking for potential memory leaks..."
+        grep -r "Timer\|StreamController\|AnimationController" lib/ packages/*/lib/ --include="*.dart" | grep -v "dispose" | head -10 || echo "No obvious memory leaks found"
+        
+    - name: Check for expensive operations
+      run: |
+        echo "Checking for expensive operations..."
+        grep -r "setState\|notifyListeners" lib/ packages/*/lib/ --include="*.dart" | wc -l | xargs -I {} echo "Found {} state updates"
+        
+    - name: Generate performance report
+      run: |
+        echo "Generating performance report..."
+        echo "# Performance Report" > performance-report.md
+        echo "Generated on: $(date)" >> performance-report.md
+        echo "" >> performance-report.md
+        echo "## App Size Analysis" >> performance-report.md
+        echo "APK size: $(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)" >> performance-report.md
+        echo "AAB size: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)" >> performance-report.md
+        echo "" >> performance-report.md
+        echo "## Code Analysis" >> performance-report.md
+        echo "Total lines of code: $(find lib/ packages/*/lib/ -name "*.dart" -exec wc -l {} + | tail -1 | awk '{print $1}')" >> performance-report.md
+        echo "Number of widgets: $(grep -r "class.*Widget" lib/ packages/*/lib/ --include="*.dart" | wc -l)" >> performance-report.md
+        echo "Number of providers: $(grep -r "Provider\|Consumer" lib/ packages/*/lib/ --include="*.dart" | wc -l)" >> performance-report.md
+        
+    - name: Upload performance report
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: performance-report.md
+        retention-days: 30

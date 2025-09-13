@@ -1,0 +1,116 @@
+name: Security
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * 1' # Run every Monday at 2 AM
+
+jobs:
+  dependency-check:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Check for outdated dependencies
+      run: flutter pub outdated
+      continue-on-error: true
+      
+    - name: Audit dependencies
+      run: flutter pub deps --json | jq '.packages[] | select(.kind == "direct") | .name' | sort | uniq
+      continue-on-error: true
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'dart' ]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-and-quality
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Get dependencies for packages
+      run: |
+        cd packages/reader_widget && flutter pub get
+        cd ../components/commons && flutter pub get
+        cd ../components/lcp && flutter pub get
+        cd ../components/navigator && flutter pub get
+        cd ../components/opds && flutter pub get
+        cd ../components/server && flutter pub get
+        cd ../components/shared && flutter pub get
+        cd ../components/streamer && flutter pub get
+        cd ../demo-app && flutter pub get
+        
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
