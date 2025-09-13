@@ -6,7 +6,7 @@ part of 'genre_feed_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$genreFeedNotifierHash() => r'ab4dee78a16239b019fb1481f4eb07f5e3687dfe';
+String _$genreFeedNotifierHash() => r'64ded0ad63eb41c4f7fd6702d3fafa19e6bde301';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,11 +29,11 @@ class _SystemHash {
   }
 }
 
-abstract class _$GenreFeedNotifier extends BuildlessAutoDisposeAsyncNotifier<
-    ({List<Entry> books, bool loadingMore})> {
+abstract class _$GenreFeedNotifier
+    extends BuildlessAutoDisposeAsyncNotifier<GenreFeedData> {
   late final String url;
 
-  Future<({List<Entry> books, bool loadingMore})> build(
+  FutureOr<GenreFeedData> build(
     String url,
   );
 }
@@ -43,8 +43,7 @@ abstract class _$GenreFeedNotifier extends BuildlessAutoDisposeAsyncNotifier<
 const genreFeedNotifierProvider = GenreFeedNotifierFamily();
 
 /// See also [GenreFeedNotifier].
-class GenreFeedNotifierFamily
-    extends Family<AsyncValue<({List<Entry> books, bool loadingMore})>> {
+class GenreFeedNotifierFamily extends Family<AsyncValue<GenreFeedData>> {
   /// See also [GenreFeedNotifier].
   const GenreFeedNotifierFamily();
 
@@ -83,11 +82,11 @@ class GenreFeedNotifierFamily
 
 /// See also [GenreFeedNotifier].
 class GenreFeedNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    GenreFeedNotifier, ({List<Entry> books, bool loadingMore})> {
+    GenreFeedNotifier, GenreFeedData> {
   /// See also [GenreFeedNotifier].
   GenreFeedNotifierProvider(
-    this.url,
-  ) : super.internal(
+    String url,
+  ) : this._internal(
           () => GenreFeedNotifier()..url = url,
           from: genreFeedNotifierProvider,
           name: r'genreFeedNotifierProvider',
@@ -98,9 +97,51 @@ class GenreFeedNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
           dependencies: GenreFeedNotifierFamily._dependencies,
           allTransitiveDependencies:
               GenreFeedNotifierFamily._allTransitiveDependencies,
+          url: url,
         );
 
+  GenreFeedNotifierProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.url,
+  }) : super.internal();
+
   final String url;
+
+  @override
+  FutureOr<GenreFeedData> runNotifierBuild(
+    covariant GenreFeedNotifier notifier,
+  ) {
+    return notifier.build(
+      url,
+    );
+  }
+
+  @override
+  Override overrideWith(GenreFeedNotifier Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: GenreFeedNotifierProvider._internal(
+        () => create()..url = url,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        url: url,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeAsyncNotifierProviderElement<GenreFeedNotifier, GenreFeedData>
+      createElement() {
+    return _GenreFeedNotifierProviderElement(this);
+  }
 
   @override
   bool operator ==(Object other) {
@@ -114,14 +155,23 @@ class GenreFeedNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
     return _SystemHash.finish(hash);
   }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GenreFeedNotifierRef
+    on AutoDisposeAsyncNotifierProviderRef<GenreFeedData> {
+  /// The parameter `url` of this provider.
+  String get url;
+}
+
+class _GenreFeedNotifierProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<GenreFeedNotifier,
+        GenreFeedData> with GenreFeedNotifierRef {
+  _GenreFeedNotifierProviderElement(super.provider);
 
   @override
-  Future<({List<Entry> books, bool loadingMore})> runNotifierBuild(
-    covariant GenreFeedNotifier notifier,
-  ) {
-    return notifier.build(
-      url,
-    );
-  }
+  String get url => (origin as GenreFeedNotifierProvider).url;
 }
-// ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -1,22 +1,22 @@
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class HomeRepository extends BookRepository {
-  HomeRepository(super.httpClient);
+class HomeRepository {
+  final BookRepository _bookRepository;
+
+  HomeRepository(this._bookRepository);
 
   Future<BookRepositoryData> getPopularHomeFeed() {
-    final successOrFailure = getCategory(popular);
-    return successOrFailure;
+    return _bookRepository.getCategory('popular');
   }
 
   Future<BookRepositoryData> getRecentHomeFeed() {
-    final successOrFailure = getCategory(recent);
-    return successOrFailure;
+    return _bookRepository.getCategory('recent');
   }
 }
 
 final homeRepositoryProvider = Provider.autoDispose<HomeRepository>((ref) {
-  final dio = ref.watch(dioProvider);
-  return HomeRepository(dio);
+  // Use local book repository for now
+  final localBookRepo = LocalBookRepository();
+  return HomeRepository(localBookRepo);
 });

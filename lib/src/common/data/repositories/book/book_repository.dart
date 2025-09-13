@@ -7,10 +7,17 @@ import 'package:xml2json/xml2json.dart';
 typedef BookRepositoryData = ({CategoryFeed? feed, HttpFailure? failure});
 
 abstract class BookRepository {
+  const BookRepository();
+
+  Future<BookRepositoryData> getCategory(String category);
+}
+
+class RemoteBookRepository extends BookRepository {
   final Dio httpClient;
 
-  const BookRepository(this.httpClient);
+  const RemoteBookRepository(this.httpClient);
 
+  @override
   Future<BookRepositoryData> getCategory(String url) async {
     try {
       final res = await httpClient.get(url);

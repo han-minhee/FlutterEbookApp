@@ -142,7 +142,7 @@ class _DownloadAlertState extends ConsumerState<DownloadAlert> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (_) => Future.value(false),
+      onPopInvokedWithResult: (_, __) => Future.value(false),
       child: CustomAlert(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -173,7 +173,7 @@ class _DownloadAlertState extends ConsumerState<DownloadAlert> {
                     context.theme.colorScheme.secondary,
                   ),
                   backgroundColor:
-                      context.theme.colorScheme.secondary.withOpacity(0.3),
+                      context.theme.colorScheme.secondary.withValues(alpha: 0.3),
                 ),
               ),
               const SizedBox(height: 5.0),

@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_ebook_app/src/features/features.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TabsScreenLarge extends ConsumerWidget {
@@ -38,18 +37,18 @@ class TabsScreenLarge extends ConsumerWidget {
                 labelType: NavigationRailLabelType.all,
                 useIndicator: true,
                 indicatorColor:
-                    context.theme.colorScheme.secondary.withOpacity(0.5),
+                    context.theme.colorScheme.secondary.withValues(alpha: 0.5),
                 destinations: const <NavigationRailDestination>[
                   NavigationRailDestination(
-                    icon: Icon(Feather.home),
+                    icon: Icon(Icons.home),
                     label: Text('Home'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Feather.compass),
+                    icon: Icon(Icons.explore),
                     label: Text('Explore'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Feather.settings),
+                    icon: Icon(Icons.settings),
                     // selectedIcon: Icon(Icons.favorite),
                     label: Text('Settings'),
                   ),

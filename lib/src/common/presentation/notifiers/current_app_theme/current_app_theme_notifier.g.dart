@@ -7,7 +7,7 @@ part of 'current_app_theme_notifier.dart';
 // **************************************************************************
 
 String _$currentAppThemeNotifierHash() =>
-    r'ea70b7c6ad6193732228f3ea9a29d7f3139ba1d7';
+    r'bfbfaaecf428557f1e32cbdbe91d610e052fa597';
 
 /// See also [CurrentAppThemeNotifier].
 @ProviderFor(CurrentAppThemeNotifier)
@@ -23,4 +23,5 @@ final currentAppThemeNotifierProvider = AutoDisposeAsyncNotifierProvider<
 );
 
 typedef _$CurrentAppThemeNotifier = AutoDisposeAsyncNotifier<CurrentAppTheme>;
-// ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

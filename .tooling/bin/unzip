@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Minimal unzip shim using Python's zipfile
+set -e
+DEST_DIR="."
+ZIPFILE=""
+# Parse args: support -d <dir>, ignore -o and -q
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -d)
+      shift
+      DEST_DIR="$1"
+      shift
+      continue
+      ;;
+    -o|-q|-qq|-qqq|-n)
+      # ignore common flags used by Flutter
+      shift
+      continue
+      ;;
+    -*)
+      # ignore any other flags
+      shift
+      continue
+      ;;
+    *)
+      if [ -z "$ZIPFILE" ]; then
+        ZIPFILE="$1"
+      fi
+      shift
+      continue
+      ;;
+  esac
+done
+if [ -z "$ZIPFILE" ]; then
+  echo "Usage: unzip <zipfile> [-d dir]" >&2
+  exit 2
+fi
+mkdir -p "$DEST_DIR"
+# Use Python zipfile to extract
+python3 - "$ZIPFILE" "$DEST_DIR" <<'PY'
+import sys, zipfile, os
+zip_path = sys.argv[1]
+dest = sys.argv[2]
+with zipfile.ZipFile(zip_path) as z:
+    z.extractall(dest)
+print(f"Extracted to {dest}")
+PY

@@ -6,7 +6,7 @@ class RiverpodObserver extends ProviderObserver {
 
   @override
   void didAddProvider(
-    ProviderBase<Object?> provider,
+    ProviderBase provider,
     Object? value,
     ProviderContainer container,
   ) {
@@ -15,7 +15,7 @@ class RiverpodObserver extends ProviderObserver {
 
   @override
   void didDisposeProvider(
-    ProviderBase<Object?> provider,
+    ProviderBase provider,
     ProviderContainer container,
   ) {
     logman.info('Provider $provider was disposed');
@@ -23,7 +23,7 @@ class RiverpodObserver extends ProviderObserver {
 
   @override
   void didUpdateProvider(
-    ProviderBase<Object?> provider,
+    ProviderBase provider,
     Object? previousValue,
     Object? newValue,
     ProviderContainer container,
@@ -35,7 +35,7 @@ class RiverpodObserver extends ProviderObserver {
 
   @override
   void providerDidFail(
-    ProviderBase<Object?> provider,
+    ProviderBase provider,
     Object error,
     StackTrace stackTrace,
     ProviderContainer container,

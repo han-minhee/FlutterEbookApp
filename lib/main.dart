@@ -8,7 +8,7 @@ import 'package:sembast/sembast.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  LocalStorage();
+  await LocalStorage.warmUp();
   await DatabaseConfig.init(StoreRef<dynamic, dynamic>.main());
   if (kIsWeb) usePathUrlStrategy();
   runApp(

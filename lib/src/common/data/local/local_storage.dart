@@ -9,10 +9,14 @@ class LocalStorage {
 
   SharedPreferences? _prefs;
 
-  LocalStorage._privateConstructor() {
-    SharedPreferences.getInstance().then((prefs) {
-      _prefs = prefs;
-    });
+  LocalStorage._privateConstructor();
+
+  static Future<void> warmUp() async {
+    await _instance._init();
+  }
+
+  Future<void> _init() async {
+    _prefs = await SharedPreferences.getInstance();
   }
 
   SharedPreferences? getSharedPreferences() {

@@ -5,9 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_ebook_app/src/features/features.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iridium_reader_widget/views/viewers/epub_screen.dart';
+import 'package:flutter_ebook_app/src/features/common/data/iridium/iridium_reader_factory.dart';
 import 'package:share_plus/share_plus.dart';
 
 @RoutePage()
@@ -66,7 +65,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                       }
                     },
                     icon: Icon(
-                      favorited ? Icons.favorite : Feather.heart,
+                      favorited ? Icons.favorite : Icons.favorite_border,
                       color: favorited
                           ? Colors.red
                           : context.theme.iconTheme.color,
@@ -76,7 +75,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
               ),
           IconButton(
             onPressed: () => _share(),
-            icon: const Icon(Feather.share),
+            icon: const Icon(Icons.share),
           ),
         ],
       ),
@@ -154,7 +153,7 @@ class _BookDescriptionSection extends StatelessWidget {
               width: 130.0,
               child: LoadingWidget(),
             ),
-            errorWidget: (context, url, error) => const Icon(Feather.x),
+            errorWidget: (context, url, error) => const Icon(Icons.close),
             fit: BoxFit.cover,
             height: 200.0,
             width: 130.0,
@@ -324,12 +323,11 @@ class _DownloadButton extends ConsumerWidget {
   ) async {
     final bookFile = File(path);
     if (bookFile.existsSync()) {
+      final reader = IridiumReaderFactory.createReader();
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) {
-            return EpubScreen.fromPath(filePath: path);
-          },
+          builder: (_) => reader.createEpubReaderFromPath(filePath: path),
         ),
       );
     } else {

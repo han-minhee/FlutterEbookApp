@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ebook_app/src/common/common.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SettingsScreenSmall extends StatefulWidget {
@@ -19,27 +18,27 @@ class _SettingsScreenSmallState extends State<SettingsScreenSmall> {
     super.initState();
     items = [
       {
-        'icon': Feather.heart,
+        'icon': Icons.favorite,
         'title': 'Favorites',
         'function': () => _pushPage(const FavoritesRoute()),
       },
       {
-        'icon': Feather.download,
+        'icon': Icons.download,
         'title': 'Downloads',
         'function': () => _pushPage(const DownloadsRoute()),
       },
       {
-        'icon': Feather.moon,
+        'icon': Icons.dark_mode,
         'title': 'Dark Mode',
         'function': null,
       },
       {
-        'icon': Feather.info,
+        'icon': Icons.info,
         'title': 'About',
         'function': () => showAbout(),
       },
       {
-        'icon': Feather.file_text,
+        'icon': Icons.description,
         'title': 'Open Source Licenses',
         'function': () => _pushPage(const LicensesRoute()),
       },

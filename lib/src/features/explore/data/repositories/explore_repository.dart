@@ -1,20 +1,20 @@
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ExploreRepository extends BookRepository {
-  ExploreRepository(super.httpClient);
+class ExploreRepository {
+  final BookRepository _bookRepository;
 
-  Future<BookRepositoryData> getGenreFeed(
-    String url,
-  ) {
-    final String stripedUrl = url.replaceAll(baseURL, '');
-    final successOrFailure = getCategory(stripedUrl);
-    return successOrFailure;
+  ExploreRepository(this._bookRepository);
+
+  Future<BookRepositoryData> getGenreFeed(String genre) {
+    // For local repository, we'll just use the genre as the category
+    return _bookRepository.getCategory(genre);
   }
 }
 
 final exploreRepositoryProvider =
     Provider.autoDispose<ExploreRepository>((ref) {
-  final dio = ref.watch(dioProvider);
-  return ExploreRepository(dio);
+  // Use local book repository for now
+  final localBookRepo = LocalBookRepository();
+  return ExploreRepository(localBookRepo);
 });

@@ -7,6 +7,10 @@ const Color darkAccent = Color(0xff2ca8e2);
 const Color lightBG = Colors.white;
 const Color darkBG = Color(0xff121212);
 const Color smokeWhite = Color(0xffF5F5F5);
+const Color lightSurface = Colors.white;
+const Color darkSurface = Color(0xff1e1e1e);
+const Color lightOnSurface = Colors.black;
+const Color darkOnSurface = Colors.white;
 
 final ThemeData lightTheme = ThemeData(
   colorScheme: ColorScheme.fromSwatch().copyWith(
@@ -19,7 +23,7 @@ final ThemeData lightTheme = ThemeData(
   navigationRailTheme: const NavigationRailThemeData(
     backgroundColor: smokeWhite,
   ),
-  tabBarTheme: const TabBarTheme(
+  tabBarTheme: const TabBarThemeData(
     labelColor: Colors.black,
     unselectedLabelColor: Colors.grey,
     indicator: UnderlineTabIndicator(
@@ -53,7 +57,7 @@ final ThemeData darkTheme = ThemeData(
   navigationRailTheme: const NavigationRailThemeData(
     backgroundColor: darkPrimary,
   ),
-  tabBarTheme: const TabBarTheme(
+  tabBarTheme: const TabBarThemeData(
     indicator: UnderlineTabIndicator(
       borderSide: BorderSide(
         color: lightAccent,

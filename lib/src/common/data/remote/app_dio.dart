@@ -70,6 +70,7 @@ class LogmanDioInterceptor extends Interceptor {
 
     final responseRecord = NetworkResponseLogmanRecord(
       id: id!,
+      url: response.requestOptions.uri.toString(),
       statusCode: response.statusCode,
       headers: responseHeaders,
       body: response.data.toString(),
@@ -90,6 +91,7 @@ class LogmanDioInterceptor extends Interceptor {
 
     final responseRecord = NetworkResponseLogmanRecord(
       id: id!,
+      url: err.requestOptions.uri.toString(),
       statusCode: err.response?.statusCode ?? 0,
       headers: responseHeaders,
       body: err.response?.data.toString(),

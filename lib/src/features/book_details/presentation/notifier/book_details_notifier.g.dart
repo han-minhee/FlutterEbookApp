@@ -7,7 +7,7 @@ part of 'book_details_notifier.dart';
 // **************************************************************************
 
 String _$bookDetailsNotifierHash() =>
-    r'0e8d835073df2c1de5aefb6f0437005ebef67290';
+    r'1a978da39091e41cbdfd1458c11fd7d275431430';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -34,7 +34,7 @@ abstract class _$BookDetailsNotifier
     extends BuildlessAutoDisposeAsyncNotifier<CategoryFeed> {
   late final String url;
 
-  Future<CategoryFeed> build(
+  FutureOr<CategoryFeed> build(
     String url,
   );
 }
@@ -86,8 +86,8 @@ class BookDetailsNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
     BookDetailsNotifier, CategoryFeed> {
   /// See also [BookDetailsNotifier].
   BookDetailsNotifierProvider(
-    this.url,
-  ) : super.internal(
+    String url,
+  ) : this._internal(
           () => BookDetailsNotifier()..url = url,
           from: bookDetailsNotifierProvider,
           name: r'bookDetailsNotifierProvider',
@@ -98,9 +98,51 @@ class BookDetailsNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
           dependencies: BookDetailsNotifierFamily._dependencies,
           allTransitiveDependencies:
               BookDetailsNotifierFamily._allTransitiveDependencies,
+          url: url,
         );
 
+  BookDetailsNotifierProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.url,
+  }) : super.internal();
+
   final String url;
+
+  @override
+  FutureOr<CategoryFeed> runNotifierBuild(
+    covariant BookDetailsNotifier notifier,
+  ) {
+    return notifier.build(
+      url,
+    );
+  }
+
+  @override
+  Override overrideWith(BookDetailsNotifier Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: BookDetailsNotifierProvider._internal(
+        () => create()..url = url,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        url: url,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeAsyncNotifierProviderElement<BookDetailsNotifier, CategoryFeed>
+      createElement() {
+    return _BookDetailsNotifierProviderElement(this);
+  }
 
   @override
   bool operator ==(Object other) {
@@ -114,14 +156,23 @@ class BookDetailsNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
     return _SystemHash.finish(hash);
   }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin BookDetailsNotifierRef
+    on AutoDisposeAsyncNotifierProviderRef<CategoryFeed> {
+  /// The parameter `url` of this provider.
+  String get url;
+}
+
+class _BookDetailsNotifierProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<BookDetailsNotifier,
+        CategoryFeed> with BookDetailsNotifierRef {
+  _BookDetailsNotifierProviderElement(super.provider);
 
   @override
-  Future<CategoryFeed> runNotifierBuild(
-    covariant BookDetailsNotifier notifier,
-  ) {
-    return notifier.build(
-      url,
-    );
-  }
+  String get url => (origin as BookDetailsNotifierProvider).url;
 }
-// ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
