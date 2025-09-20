@@ -11,7 +11,6 @@ class TabsScreenSmall extends ConsumerWidget {
     return AutoTabsRouter(
       routes: const [
         HomeRoute(),
-        ExploreRoute(),
         SettingsRoute(),
       ],
       transitionBuilder: (context, child, animation) => FadeTransition(
@@ -32,10 +31,6 @@ class TabsScreenSmall extends ConsumerWidget {
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
                 label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore),
-                label: 'Explore',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.settings),

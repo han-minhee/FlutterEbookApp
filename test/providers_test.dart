@@ -28,13 +28,14 @@ void main() {
     test('database providers should provide Database instances', () {
       final downloadsDb = container.read(downloadsDatabaseProvider);
       final favoritesDb = container.read(favoritesDatabaseProvider);
-      
+
       expect(downloadsDb, isNotNull);
       expect(favoritesDb, isNotNull);
     });
 
     test('currentAppThemeNotifierProvider should be available', () {
-      expect(() => container.read(currentAppThemeNotifierProvider), returnsNormally);
+      expect(() => container.read(currentAppThemeNotifierProvider),
+          returnsNormally);
     });
   });
 }

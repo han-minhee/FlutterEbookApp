@@ -8,11 +8,11 @@ void main() {
       // Test that themes are properly configured
       expect(lightTheme, isNotNull);
       expect(darkTheme, isNotNull);
-      
+
       // Test that TabBarThemeData is properly configured (this was the main fix)
       expect(lightTheme.tabBarTheme, isA<TabBarThemeData>());
       expect(darkTheme.tabBarTheme, isA<TabBarThemeData>());
-      
+
       // Test theme properties
       expect(lightTheme.brightness, Brightness.light);
       expect(darkTheme.brightness, Brightness.dark);
@@ -33,10 +33,10 @@ void main() {
       // This test validates that the TabBarTheme -> TabBarThemeData migration worked
       final lightTabBarTheme = lightTheme.tabBarTheme;
       final darkTabBarTheme = darkTheme.tabBarTheme;
-      
+
       expect(lightTabBarTheme, isNotNull);
       expect(darkTabBarTheme, isNotNull);
-      
+
       // Verify specific properties that were migrated
       expect(lightTabBarTheme.labelColor, isNotNull);
       expect(lightTabBarTheme.unselectedLabelColor, isNotNull);
@@ -46,11 +46,14 @@ void main() {
 
     test('Color scheme should have proper contrast', () {
       // Test color contrast for accessibility
-      expect(lightTheme.colorScheme.primary, isNot(equals(lightTheme.colorScheme.surface)));
-      expect(darkTheme.colorScheme.primary, isNot(equals(darkTheme.colorScheme.surface)));
+      expect(lightTheme.colorScheme.primary,
+          isNot(equals(lightTheme.colorScheme.surface)));
+      expect(darkTheme.colorScheme.primary,
+          isNot(equals(darkTheme.colorScheme.surface)));
 
       // Test that surface colors are different between themes
-      expect(lightTheme.colorScheme.surface, isNot(equals(darkTheme.colorScheme.surface)));
+      expect(lightTheme.colorScheme.surface,
+          isNot(equals(darkTheme.colorScheme.surface)));
     });
 
     test('Card theme should be properly configured', () {

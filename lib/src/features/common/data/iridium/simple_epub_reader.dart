@@ -90,7 +90,7 @@ class _SimpleEpubReaderWidgetState extends State<SimpleEpubReaderWidget> {
       });
 
       String content;
-      
+
       if (widget.filePath.startsWith('assets/')) {
         // Load from assets
         content = await rootBundle.loadString(widget.filePath);
@@ -106,7 +106,7 @@ class _SimpleEpubReaderWidgetState extends State<SimpleEpubReaderWidget> {
 
       // For now, just split content into pages (simple implementation)
       pages = _splitIntoPages(content);
-      
+
       setState(() {
         bookContent = content;
         isLoading = false;
@@ -124,12 +124,13 @@ class _SimpleEpubReaderWidgetState extends State<SimpleEpubReaderWidget> {
     const int wordsPerPage = 300;
     final words = content.split(' ');
     final List<String> pageList = [];
-    
+
     for (int i = 0; i < words.length; i += wordsPerPage) {
-      final endIndex = (i + wordsPerPage < words.length) ? i + wordsPerPage : words.length;
+      final endIndex =
+          (i + wordsPerPage < words.length) ? i + wordsPerPage : words.length;
       pageList.add(words.sublist(i, endIndex).join(' '));
     }
-    
+
     return pageList.isEmpty ? ['No content available'] : pageList;
   }
 
@@ -230,9 +231,9 @@ class _SimpleEpubReaderWidgetState extends State<SimpleEpubReaderWidget> {
             child: Text(
               pages[index],
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.6,
-                fontSize: 16,
-              ),
+                    height: 1.6,
+                    fontSize: 16,
+                  ),
             ),
           ),
         );

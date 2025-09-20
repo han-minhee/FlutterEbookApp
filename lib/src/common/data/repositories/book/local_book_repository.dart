@@ -66,7 +66,8 @@ class LocalBookRepository implements BookRepository {
         .replaceAll('_', ' ')
         .replaceAll('-', ' ')
         .split(' ')
-        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : word)
+        .map((word) =>
+            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : word)
         .join(' ');
   }
 

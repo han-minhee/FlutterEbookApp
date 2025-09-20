@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_ebook_app/src/features/features.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_ebook_app/src/features/common/data/iridium/iridium_reader_factory.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 @RoutePage()
 class BookDetailsScreen extends ConsumerStatefulWidget {
@@ -112,8 +114,10 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
   }
 
   void _share() {
-    Share.share('${widget.entry.title!.t} by ${widget.entry.author!.name!.t}'
-        'Read/Download ${widget.entry.title!.t} from ${widget.entry.link![3].href}.');
+    final href = _acquisitionHref(widget.entry);
+    final location = href.startsWith('assets/') ? 'your library (offline)' : href;
+    Share.share(
+        '${widget.entry.title!.t} by ${widget.entry.author!.name!.t} — $location');
   }
 }
 
@@ -146,18 +150,7 @@ class _BookDescriptionSection extends StatelessWidget {
       children: <Widget>[
         Hero(
           tag: imgTag,
-          child: CachedNetworkImage(
-            imageUrl: '${entry.link![1].href}',
-            placeholder: (context, url) => const SizedBox(
-              height: 200.0,
-              width: 130.0,
-              child: LoadingWidget(),
-            ),
-            errorWidget: (context, url, error) => const Icon(Icons.close),
-            fit: BoxFit.cover,
-            height: 200.0,
-            width: 130.0,
-          ),
+          child: _DetailsCoverImage(src: _coverHref(entry)),
         ),
         const SizedBox(width: 20.0),
         Flexible(
@@ -204,6 +197,57 @@ class _BookDescriptionSection extends StatelessWidget {
       ],
     );
   }
+}
+
+class _DetailsCoverImage extends StatelessWidget {
+  final String src;
+
+  const _DetailsCoverImage({required this.src});
+
+  bool get _isAsset => src.startsWith('assets/');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAsset) {
+      return Image.asset(
+        src,
+        fit: BoxFit.cover,
+        height: 200.0,
+        width: 130.0,
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: src,
+      placeholder: (context, url) => const SizedBox(
+        height: 200.0,
+        width: 130.0,
+        child: LoadingWidget(),
+      ),
+      errorWidget: (context, url, error) => Image.asset(
+        'packages/reader_widget/assets/images/cover.png',
+        fit: BoxFit.cover,
+        height: 200.0,
+        width: 130.0,
+      ),
+      fit: BoxFit.cover,
+      height: 200.0,
+      width: 130.0,
+    );
+  }
+}
+
+String _coverHref(Entry entry) {
+  try {
+    final links = entry.link ?? [];
+    final imageLink = links.firstWhere(
+      (l) => (l.type?.contains('image') ?? false) || (l.rel?.contains('image') ?? false),
+      orElse: () => Link1(href: ''),
+    );
+    if ((imageLink.href ?? '').isNotEmpty) {
+      return imageLink.href!;
+    }
+  } catch (_) {}
+  return 'packages/reader_widget/assets/images/cover.png';
 }
 
 class _CategoryChips extends StatelessWidget {
@@ -297,11 +341,16 @@ class _DownloadButton extends ConsumerWidget {
           padding: EdgeInsets.zero,
         ),
         onPressed: () {
+          final href = _acquisitionHref(entry);
+          if (href.startsWith('assets/')) {
+            openAssetBook(href, context);
+            return;
+          }
           DownloadAlert.show(
             context: context,
-            url: entry.link![3].href!,
+            url: href,
             name: entry.title!.t ?? '',
-            image: '${entry.link![1].href}',
+            image: _coverHref(entry),
             id: entry.id!.t.toString(),
           );
         },
@@ -336,6 +385,50 @@ class _DownloadButton extends ConsumerWidget {
       );
       ref.read(downloadsNotifierProvider.notifier).deleteBook(id);
     }
+  }
+
+  Future<void> openAssetBook(String assetPath, BuildContext context) async {
+    try {
+      final tempPath = await _copyAssetToTemp(assetPath);
+      final reader = IridiumReaderFactory.createReader();
+      // ignore: use_build_context_synchronously
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => reader.createEpubReaderFromPath(filePath: tempPath),
+        ),
+      );
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      context.showSnackBarUsingText('Failed to open local book');
+    }
+  }
+
+  Future<String> _copyAssetToTemp(String assetPath) async {
+    final data = await rootBundle.load(assetPath);
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/${assetPath.split('/').last}');
+    await file.writeAsBytes(
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      flush: true,
+    );
+    return file.path;
+  }
+
+  String _acquisitionHref(Entry entry) {
+    try {
+      final links = entry.link ?? [];
+      final epubLink = links.firstWhere(
+        (l) =>
+            (l.type?.contains('epub') ?? false) ||
+            (l.rel?.contains('acquisition') ?? false),
+        orElse: () => Link1(href: ''),
+      );
+      if ((epubLink.href ?? '').isNotEmpty) {
+        return epubLink.href!;
+      }
+    } catch (_) {}
+    return '';
   }
 }
 

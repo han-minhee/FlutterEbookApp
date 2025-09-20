@@ -43,7 +43,8 @@ class DownloadAlert extends ConsumerStatefulWidget {
   }
 
   @override
-  _DownloadAlertState createState() => _DownloadAlertState();
+  @override
+  ConsumerState<DownloadAlert> createState() => _DownloadAlertState();
 }
 
 class _DownloadAlertState extends ConsumerState<DownloadAlert> {
@@ -172,8 +173,8 @@ class _DownloadAlertState extends ConsumerState<DownloadAlert> {
                   valueColor: AlwaysStoppedAnimation(
                     context.theme.colorScheme.secondary,
                   ),
-                  backgroundColor:
-                      context.theme.colorScheme.secondary.withValues(alpha: 0.3),
+                  backgroundColor: context.theme.colorScheme.secondary
+                      .withValues(alpha: 0.3),
                 ),
               ),
               const SizedBox(height: 5.0),

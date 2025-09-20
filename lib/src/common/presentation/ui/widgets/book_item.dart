@@ -51,18 +51,7 @@ class BookItem extends ConsumerWidget {
               ),
               child: Hero(
                 tag: imgTag,
-                child: CachedNetworkImage(
-                  imageUrl: img,
-                  placeholder: (context, url) => const LoadingWidget(
-                    isImage: true,
-                  ),
-                  errorWidget: (context, url, error) => Image.asset(
-                    'assets/images/place.png',
-                    fit: BoxFit.cover,
-                  ),
-                  fit: BoxFit.cover,
-                  height: 150.0,
-                ),
+                child: _GridCoverImage(src: img),
               ),
             ),
             const SizedBox(height: 5.0),
@@ -85,6 +74,38 @@ class BookItem extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GridCoverImage extends StatelessWidget {
+  final String src;
+
+  const _GridCoverImage({required this.src});
+
+  bool get _isAsset => src.startsWith('assets/');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAsset) {
+      return Image.asset(
+        src,
+        fit: BoxFit.cover,
+        height: 150.0,
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: src,
+      placeholder: (context, url) => const LoadingWidget(
+        isImage: true,
+      ),
+      errorWidget: (context, url, error) => Image.asset(
+        'packages/reader_widget/assets/images/cover.png',
+        fit: BoxFit.cover,
+        height: 150.0,
+      ),
+      fit: BoxFit.cover,
+      height: 150.0,
     );
   }
 }

@@ -47,7 +47,8 @@ class LocalIridiumReader implements IridiumReaderInterface {
         isTextInteractionEnabled: true,
       );
     } catch (e) {
-      return _createErrorWidget('Failed to load local Iridium: $e', file.toString());
+      return _createErrorWidget(
+          'Failed to load local Iridium: $e', file.toString());
     }
   }
 
@@ -67,7 +68,8 @@ class LocalIridiumReader implements IridiumReaderInterface {
         location: location,
         settings: settings,
         theme: theme,
-        isTextInteractionEnabled: true, // Enable text selection for highlighting
+        isTextInteractionEnabled:
+            true, // Enable text selection for highlighting
       );
     } catch (e) {
       return _createErrorWidget('Failed to load local Iridium: $e', rootHref);
@@ -130,56 +132,6 @@ class LocalIridiumReader implements IridiumReaderInterface {
     );
   }
 
-  Widget _createPlaceholderWidget(String message) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Local Iridium Reader'),
-        backgroundColor: Colors.blue.shade300,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.folder,
-              size: 64,
-              color: Colors.blue,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Local Iridium Implementation',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                'This placeholder demonstrates the abstraction layer. '
-                'Replace with actual local Iridium implementation when compilation issues are resolved.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Placeholder UI omitted; unused locally. Keep class focused on public API.
+  // If a visible placeholder is needed, use the public error widget instead.
 }

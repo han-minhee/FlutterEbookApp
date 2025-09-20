@@ -5,19 +5,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Iridium Abstraction Layer Tests', () {
-    testWidgets('External Iridium reader creates widget from path', (WidgetTester tester) async {
+    testWidgets('External Iridium reader creates widget from path',
+        (WidgetTester tester) async {
       const testPath = '/test/path/book.epub';
-      
+
       final reader = IridiumReaderFactory.createExternalReader();
       final widget = reader.createEpubReaderFromPath(
         filePath: testPath,
       );
 
       expect(widget, isA<Widget>());
-      
+
       await tester.pumpWidget(MaterialApp(home: widget));
       await tester.pumpAndSettle();
-      
+
       // Verify the widget is rendered without errors
       expect(find.byType(Scaffold), findsOneWidget);
       expect(find.text('External Iridium Implementation'), findsOneWidget);
@@ -28,25 +29,29 @@ void main() {
       expect(externalReader, isA<ExternalIridiumReader>());
     });
 
-    testWidgets('External reader supports all interface methods', (WidgetTester tester) async {
+    testWidgets('External reader supports all interface methods',
+        (WidgetTester tester) async {
       final reader = IridiumReaderFactory.createExternalReader();
-      
+
       // Test createEpubReaderFromPath
-      final pathWidget = reader.createEpubReaderFromPath(filePath: '/test/path');
+      final pathWidget =
+          reader.createEpubReaderFromPath(filePath: '/test/path');
       expect(pathWidget, isA<Widget>());
-      
+
       // Test createEpubReaderFromFile
       final fileWidget = reader.createEpubReaderFromFile(file: MockFile());
       expect(fileWidget, isA<Widget>());
-      
+
       // Test createEpubReaderFromUri
-      final uriWidget = reader.createEpubReaderFromUri(rootHref: 'https://example.com');
+      final uriWidget =
+          reader.createEpubReaderFromUri(rootHref: 'https://example.com');
       expect(uriWidget, isA<Widget>());
     });
 
-    testWidgets('Interface methods accept all expected parameters', (WidgetTester tester) async {
+    testWidgets('Interface methods accept all expected parameters',
+        (WidgetTester tester) async {
       final reader = IridiumReaderFactory.createExternalReader();
-      
+
       final widget = reader.createEpubReaderFromPath(
         key: const Key('test'),
         filePath: '/test/path',
@@ -55,7 +60,7 @@ void main() {
         theme: '{"backgroundColor": "#ffffff"}',
         onReturn: (data) => {},
       );
-      
+
       expect(widget, isA<Widget>());
     });
   });

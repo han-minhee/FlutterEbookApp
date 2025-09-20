@@ -55,10 +55,7 @@ class _HomeScreenSmallState extends ConsumerState<HomeScreenSmall> {
                   if (!context.isSmallScreen) const SizedBox(height: 30.0),
                   FeaturedSection(popular: popular),
                   const SizedBox(height: 20.0),
-                  const _SectionTitle(title: 'Categories'),
-                  const SizedBox(height: 10.0),
-                  _GenreSection(popular: popular),
-                  const SizedBox(height: 20.0),
+                  // Categories removed for local library mode
                   const _SectionTitle(title: 'Recently Added'),
                   const SizedBox(height: 20.0),
                   _NewSection(recent: recent),
@@ -124,7 +121,7 @@ class FeaturedSection extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
               child: BookCard(
-                img: entry.link![1].href!,
+                img: _coverHref(entry),
                 entry: entry,
               ),
             );
@@ -133,6 +130,20 @@ class FeaturedSection extends StatelessWidget {
       ),
     );
   }
+}
+
+String _coverHref(Entry entry) {
+  try {
+    final links = entry.link ?? [];
+    final imageLink = links.firstWhere(
+      (l) => (l.type?.contains('image') ?? false) || (l.rel?.contains('image') ?? false),
+      orElse: () => Link1(href: ''),
+    );
+    if ((imageLink.href ?? '').isNotEmpty) {
+      return imageLink.href!;
+    }
+  } catch (_) {}
+  return 'packages/reader_widget/assets/images/cover.png';
 }
 
 class _GenreSection extends StatelessWidget {

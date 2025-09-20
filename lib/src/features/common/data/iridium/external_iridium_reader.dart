@@ -27,7 +27,7 @@ class ExternalIridiumReader implements IridiumReaderInterface {
     // } catch (e) {
     //   return _createErrorWidget('Failed to load external Iridium: $e', filePath);
     // }
-    
+
     // Placeholder implementation showing the structure
     return _createPlaceholderWidget('External Iridium - Path: $filePath');
   }
@@ -54,7 +54,7 @@ class ExternalIridiumReader implements IridiumReaderInterface {
     // } catch (e) {
     //   return _createErrorWidget('Failed to load external Iridium: $e', file.toString());
     // }
-    
+
     // Placeholder implementation showing the structure
     return _createPlaceholderWidget('External Iridium - File: $file');
   }
@@ -81,7 +81,7 @@ class ExternalIridiumReader implements IridiumReaderInterface {
     // } catch (e) {
     //   return _createErrorWidget('Failed to load external Iridium: $e', rootHref);
     // }
-    
+
     // Placeholder implementation showing the structure
     return _createPlaceholderWidget('External Iridium - URI: $rootHref');
   }

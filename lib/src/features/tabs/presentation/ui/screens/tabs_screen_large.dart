@@ -12,7 +12,6 @@ class TabsScreenLarge extends ConsumerWidget {
     return AutoTabsRouter(
       routes: const [
         HomeRoute(),
-        ExploreRoute(),
         SettingsRoute(),
       ],
       transitionBuilder: (context, child, animation) => FadeTransition(
@@ -42,10 +41,6 @@ class TabsScreenLarge extends ConsumerWidget {
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
                     label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.explore),
-                    label: Text('Explore'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.settings),

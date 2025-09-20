@@ -1,76 +1,61 @@
-<!-- Copilot / AI agent instructions for FlutterEbookApp -->
+# AI Coding Agent Guide for FlutterEbookApp
 
-Purpose
-- Help AI coding agents be immediately productive in this repository by describing the app architecture, developer workflows, and project-specific conventions.
+This document orients AI agents to be productive quickly in this repo. Keep answers concise and actionable. Link to concrete files and follow existing patterns.
 
-Quick facts
-- Language: Dart / Flutter (SDK >=3.0.0)
-- State management: `flutter_riverpod` (generated Riverpod notifiers via `riverpod_annotation`)
-- Routing: `auto_route` with generated router (`lib/src/common/router/app_router.gr.dart`)
-- Local DB: `sembast` (see `lib/src/common/data/database/database_config.dart`)
-- Custom reader widget: local package `packages/reader_widget` used via path dependency
+## Architecture Overview
+- App: `lib/main.dart` initializes SharedPreferences (`LocalStorage.warmUp()`), Sembast DBs (`DatabaseConfig.init()`), enables path URL strategy on web, then runs `ProviderScope` with `RiverpodObserver` and `MyApp`.
+- Composition: `lib/src/app.dart` wires theme, routing, and Riverpod. Fonts via `GoogleFonts.sourceSansProTextTheme`.
+- Routing: AutoRoute v8 in `lib/src/common/router/app_router.dart` with generated `app_router.gr.dart`. Tabs shell hosts nested stacks (Home, Settings; Explore partially disabled). Use `@AutoRouterConfig` and `CustomRoute/CupertinoRoute`.
+- State: Riverpod 2 with codegen (`riverpod_annotation`). Notifiers live under `lib/src/**/presentation/notifiers`. Generated files: `*.g.dart`.
+- Data: Clean-ish layers under `lib/src/common/{data,domain,application}`.
+  - Persistence: Sembast (`DatabaseConfig`) creates two DBs: `download.db`, `favorites11.db`. Access via providers in `presentation/providers/database_provider.dart`.
+  - Preferences: `LocalStorage` singleton wraps `SharedPreferences`, exposed by `shared_preferences_provider.dart`.
+  - Books: `BookRepository` abstraction with a local implementation (`local_book_repository.dart`) that builds OPDS-like `CategoryFeed` from `assets/books/*.epub`. A remote impl exists (`book_repository.dart` using `Dio` + `xml2json`) but UI currently uses local repo.
+- UI patterns:
+  - Theme constants in `presentation/theme/theme_config.dart`. Access theme via extension `context.theme` from `lib/src/common/extensions/context_extensions.dart`.
+  - Reusable widgets in `lib/src/common/presentation/ui/widgets` (e.g., `DescriptionTextWidget`, loading/error dialogs).
+  - Reader: embedded via local package `packages/reader_widget` and `packages/components/navigator` (mno_navigator) for EPUB rendering.
 
-What to know about architecture (big picture)
-- App entry: `lib/main.dart` – initializes local storage and DB, sets URL strategy for web, and starts `ProviderScope` + `MyApp`.
-- App shell: `lib/src/app.dart` – `MaterialApp.router` using `AppRouter` and Riverpod theme provider.
-- Shared layer: `lib/src/common/` contains application services, data layer, presentation widgets, providers, and generated code examples. Treat `common` as the boundary between features and platform integration.
-- Features: `lib/src/features/` contains UI screens and feature-specific logic; use providers and services in `common` to access shared resources.
-- Platform adapters: `lib/src/common/data/remote/adapter/` uses conditional imports to pick the right HTTP adapter for web vs mobile (`web_adapter.dart` / `mobile_adapter.dart`). Use `getAdapter()` through `app_dio.dart`.
+## Key Conventions
+- Barrel exports: Most folders expose an `index` via `.../common.dart`, `.../data.dart`, `.../domain.dart`, `.../presentation.dart`, `features.dart`.
+- Riverpod codegen: Annotate with `@riverpod`, include `part 'xxx.g.dart';`, run build_runner after changes. Providers often declared in `presentation/providers` and feature-specific `presentation/notifiers`.
+- Navigation: Prefer defining routes in `AppRouter.routes`. Use nested routes for tab stacks. Generated types like `HomeRoute`, `BookDetailsRoute` come from `app_router.gr.dart`.
+- Theming: Use `context.theme` and color scheme from `theme_config.dart`. App title from `src/common/constants/strings.dart` (`appName`). Dark mode preference stored as `isDarkMode` key.
+- Assets: EPUB files live in `assets/books/` and are discovered via `AssetManifest.json`. When adding books, update `pubspec.yaml` assets if new folders are added.
 
-Project-specific conventions and patterns
-- Riverpod: project uses `@riverpod` annotated classes that generate `.g.dart` files. Look for `part '...g.dart'` at top of notifier files (e.g. `current_app_theme_notifier.dart`). Regenerate with `build_runner` when changing annotations.
-- Generated code: `auto_route` and `freezed`/`riverpod` code is generated. Do not hand-edit `*.gr.dart` or `*.g.dart` files.
-- Local packages: `packages/reader_widget` is a local package referenced via `pubspec.yaml`. When changing it, run `flutter pub get` at repo root to pick up local changes.
-- Database: `sembast` stores app data. Database instances are provided via Riverpod providers in `lib/src/common/presentation/providers/database_provider.dart`.
-- Assets: ePub samples are under `assets/books/` and images under `assets/images/`. The app expects these asset paths as declared in `pubspec.yaml`.
+## Typical Workflows
+- Install deps:
+  - `flutter pub get`
+- Generate code (after changing `@riverpod` or AutoRoute):
+  - `dart run build_runner build --delete-conflicting-outputs`
+- Run app:
+  - `flutter run` (desktop/mobile/web supported)
+- Run tests:
+  - `flutter test`
+- Lint/format:
+  - `flutter analyze`
+  - `dart format .`
 
-Common developer workflows (commands)
-- Install deps: `flutter pub get`
-- Run on device/emulator: `flutter run` (or use platform-specific targets like `-d windows`, `-d chrome`)
-- Run web locally: `flutter run -d chrome` (the app uses `usePathUrlStrategy()` in `main.dart` so routes are path-based)
-- Regenerate code (auto_route / riverpod / freezed):
-  - `flutter pub run build_runner build --delete-conflicting-outputs`
-  - For incremental work, `--watch` can be used: `flutter pub run build_runner watch`
-- Run tests: `flutter test`
-- Analyze: `flutter analyze`
+## Cross-Cutting Details
+- Databases: Call `DatabaseConfig.getDatabaseInstance(name)` via providers; do not open your own DB connections. Names are in `DatabaseConfig.databaseNames`.
+- Home/Explore data: `HomeRepository` and `ExploreRepository` currently construct with `LocalBookRepository` (local asset feed). Expect `getCategory('popular'|'recent'|<genre>)` to return `({feed, failure})`.
+- Error handling: Repositories return `HttpFailure` enums in the tuple when failures occur; UI notifiers use `AsyncValue.guard` and throw `failure.description` strings.
+- UI text: Long descriptions are handled by `DescriptionTextWidget` which splits >300 chars and toggles show more/less.
 
-Files and locations to reference when changing parts of the app
-- App bootstrap: `lib/main.dart`
-- Router config: `lib/src/common/router/app_router.dart` and generated `app_router.gr.dart`
-- Shared services & providers: `lib/src/common/application/` and `lib/src/common/presentation/providers/`
-- Data layer + DB: `lib/src/common/data/database/` and `lib/src/common/data/local/`
-- HTTP client: `lib/src/common/data/remote/app_dio.dart` and `lib/src/common/data/remote/adapter/`
-- UI conventions and widgets: `lib/src/common/presentation/ui/widgets/`
-- Local package: `packages/reader_widget/` (reader implementation used by features)
+## Where To Start
+- Add a new screen: define a `@RoutePage()` in feature, register in `AppRouter.routes`, run codegen, then navigate using generated `...Route` types.
+- Add new setting or theme toggle: use `CurrentAppThemeNotifier` (`presentation/notifiers/current_app_theme`) and `CurrentAppThemeService` to persist; prefer `context.isPlatformDarkThemed` for defaults.
+- Extend local library: drop new `.epub` under `assets/books/` and it will appear in feeds after rebuild; titles are derived from filenames by `LocalBookRepository._extractTitleFromFilename`.
 
-Examples (how to make common edits)
-- Adding a Riverpod notifier method:
-  - Edit the notifier (e.g. `lib/src/common/presentation/notifiers/...`)
-  - Ensure `part '...g.dart'` remains present
-  - Run build_runner to generate updated provider code
-- Adding a route:
-  - Update `lib/src/common/router/app_router.dart` to add an `AutoRoute`
-  - Run build_runner to generate `app_router.gr.dart`
-- Changing HTTP behavior per platform:
-  - Edit or inspect `lib/src/common/data/remote/adapter/*` for platform-specific adapters
-  - `app_dio.dart` chooses the adapter via `getAdapter()` and registers interceptors
+## External Packages/Modules
+- Routing: `auto_route` (+ generator)
+- State: `flutter_riverpod`, `riverpod_annotation` (+ generator)
+- Storage: `sembast`, `sembast_web`, `shared_preferences`
+- Networking/XML: `dio`, `xml2json` (only if using remote repo)
+- Reader: `packages/components/navigator` (mno_navigator), `packages/reader_widget`
 
-Gotchas and small details
-- Many files rely on generated code; build failures often mean a missing `g.dart` or `gr.dart` file. Run `build_runner` and check for `part` mismatches.
-- Conditional imports are used for platform-specific behavior (see `adapter.dart`). When editing, keep conditional import shape intact to avoid cross-platform runtime issues.
-- Database initialization: `LocalStorage.warmUp()` and `DatabaseConfig.init(...)` are called before `runApp` in `main.dart`. Avoid async side-effects that expect the DB to exist before these calls complete.
-- Web routes: `usePathUrlStrategy()` flips behavior of the URL; tests or scripts that assume hash-based routing will fail.
-
-If you change build or runtime scripts
-- Update `pubspec.yaml` and mention any required `flutter` or platform flags in this file after discussion with maintainers.
-
-When adding new files
-- Place shared logic in `lib/src/common/` and feature UIs under `lib/src/features/`.
-- Add exports to the relevant barrel files (e.g., `lib/src/common/common.dart`) when you add a new public module.
-
-If you're unsure
-- Inspect `lib/main.dart`, `lib/src/app.dart`, and `lib/src/common/` first.
-- Run `flutter pub get` and `flutter pub run build_runner build` to reproduce common local build issues.
-
-Contact / feedback
-- After applying changes, run `flutter run` and `flutter test`. If something is failing, report the failing command and the short stack trace.
+## Gotchas
+- Always run build_runner after modifying `@riverpod` notifiers or routes.
+- `DatabaseConfig.init()` must be called before any DB access (already in `main.dart`).
+- On web, `usePathUrlStrategy()` is enabled; ensure route paths are correct when deep-linking.
+- Many features of Explore are trimmed in router; verify route existence before navigating.

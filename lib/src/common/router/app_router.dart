@@ -39,22 +39,7 @@ class AppRouter extends _$AppRouter {
               ),
             ],
           ),
-          CupertinoRoute(
-            page: ExploreRoute.page,
-            path: 'explore-tab',
-            children: [
-              CustomRoute(
-                transitionsBuilder: (_, __, ___, child) => child,
-                page: BookDetailsRoute.page,
-                path: 'book-details-nested-tab',
-              ),
-              CustomRoute(
-                transitionsBuilder: (_, __, ___, child) => child,
-                page: GenreRoute.page,
-                path: 'genre-nested-tab',
-              ),
-            ],
-          ),
+          // Explore tab removed for local library mode
           CupertinoRoute(
             page: SettingsRoute.page,
             path: 'settings-tab',
@@ -87,14 +72,7 @@ class AppRouter extends _$AppRouter {
         page: BookDetailsRoute.page,
         path: '/book-details-tab',
       ),
-      CupertinoRoute(
-        page: ExploreRoute.page,
-        path: '/explore-tab',
-      ),
-      CupertinoRoute(
-        page: GenreRoute.page,
-        path: '/genre-tab',
-      ),
+      // Explore and Genre routes removed for local library mode
       CupertinoRoute(
         page: DownloadsRoute.page,
         path: '/downloads-tab',

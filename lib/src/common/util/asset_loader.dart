@@ -17,6 +17,3 @@ Future<String> copyAssetEpubToTemp(String assetPath) async {
   await outFile.writeAsBytes(byteData.buffer.asUint8List());
   return outFile.path;
 }
-
-
-

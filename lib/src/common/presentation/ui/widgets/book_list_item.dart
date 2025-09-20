@@ -51,25 +51,7 @@ class BookListItem extends ConsumerWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                 child: Hero(
                   tag: imgTag,
-                  child: CachedNetworkImage(
-                    imageUrl: entry.link![1].href!,
-                    placeholder: (context, url) => const SizedBox(
-                      height: 150.0,
-                      width: 100.0,
-                      child: LoadingWidget(
-                        isImage: true,
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Image.asset(
-                      'assets/images/place.png',
-                      fit: BoxFit.cover,
-                      height: 150.0,
-                      width: 100.0,
-                    ),
-                    fit: BoxFit.cover,
-                    height: 150.0,
-                    width: 100.0,
-                  ),
+                  child: _ListCoverImage(src: entry.link![1].href!),
                 ),
               ),
             ),
@@ -127,6 +109,45 @@ class BookListItem extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ListCoverImage extends StatelessWidget {
+  final String src;
+
+  const _ListCoverImage({required this.src});
+
+  bool get _isAsset => src.startsWith('assets/');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAsset) {
+      return Image.asset(
+        src,
+        fit: BoxFit.cover,
+        height: 150.0,
+        width: 100.0,
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: src,
+      placeholder: (context, url) => const SizedBox(
+        height: 150.0,
+        width: 100.0,
+        child: LoadingWidget(
+          isImage: true,
+        ),
+      ),
+      errorWidget: (context, url, error) => Image.asset(
+        'packages/reader_widget/assets/images/cover.png',
+        fit: BoxFit.cover,
+        height: 150.0,
+        width: 100.0,
+      ),
+      fit: BoxFit.cover,
+      height: 150.0,
+      width: 100.0,
     );
   }
 }

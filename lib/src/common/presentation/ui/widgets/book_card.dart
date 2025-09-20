@@ -54,21 +54,40 @@ class BookCard extends ConsumerWidget {
             ),
             child: Hero(
               tag: imgTag,
-              child: CachedNetworkImage(
-                imageUrl: img,
-                placeholder: (context, url) => const LoadingWidget(
-                  isImage: true,
-                ),
-                errorWidget: (context, url, error) => Image.asset(
-                  'assets/images/place.png',
-                  fit: BoxFit.cover,
-                ),
-                fit: BoxFit.cover,
-              ),
+              child: _CoverImage(image: img),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CoverImage extends StatelessWidget {
+  final String image;
+
+  const _CoverImage({required this.image});
+
+  bool get _isAsset => image.startsWith('assets/');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAsset) {
+      return Image.asset(
+        image,
+        fit: BoxFit.cover,
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: image,
+      placeholder: (context, url) => const LoadingWidget(
+        isImage: true,
+      ),
+      errorWidget: (context, url, error) => Image.asset(
+        'packages/reader_widget/assets/images/cover.png',
+        fit: BoxFit.cover,
+      ),
+      fit: BoxFit.cover,
     );
   }
 }

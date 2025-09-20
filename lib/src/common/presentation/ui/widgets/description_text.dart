@@ -7,7 +7,8 @@ class DescriptionTextWidget extends StatefulWidget {
   const DescriptionTextWidget({super.key, required this.text});
 
   @override
-  _DescriptionTextWidgetState createState() => _DescriptionTextWidgetState();
+  @override
+  State<DescriptionTextWidget> createState() => _DescriptionTextWidgetState();
 }
 
 class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {

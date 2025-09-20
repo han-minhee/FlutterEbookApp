@@ -63,7 +63,9 @@ void main() {
     test('App bar theme should be configured', () {
       // Test app bar theme
       expect(
-          lightTheme.appBarTheme.backgroundColor, equals(Colors.transparent));
+        lightTheme.appBarTheme.backgroundColor,
+        equals(Colors.transparent),
+      );
       expect(darkTheme.appBarTheme.backgroundColor, equals(Colors.transparent));
       expect(lightTheme.appBarTheme.elevation, equals(0));
       expect(darkTheme.appBarTheme.elevation, equals(0));
@@ -72,7 +74,7 @@ void main() {
     test('Text processing functions should work', () {
       // Test backslash removal
       const testString = 'Test\\String\\With\\Backslashes';
-      final cleaned = testString.replaceAll(r'\', '');
+      final cleaned = testString.replaceAll('\\', '');
       expect(cleaned, equals('TestStringWithBackslashes'));
 
       // Test text truncation
@@ -82,7 +84,7 @@ void main() {
           longText.length < 100 ? longText : '${longText.substring(0, 100)}...';
       expect(truncated.endsWith('...'), isTrue);
       expect(truncated.length, lessThanOrEqualTo(103));
-    },);
+    });
 
     test('URL validation should work', () {
       const validUrl = 'https://example.com/book.epub';
@@ -138,7 +140,7 @@ void main() {
 
       for (int i = 0; i < iterations; i++) {
         const text = 'Test\\String\\Performance';
-        final result = text.replaceAll(r'\', '');
+        final result = text.replaceAll('\\', '');
         expect(result, isNotNull);
       }
 

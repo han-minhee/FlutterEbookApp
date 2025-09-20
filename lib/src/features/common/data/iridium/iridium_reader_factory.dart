@@ -5,7 +5,8 @@ import 'package:flutter_ebook_app/src/features/common/data/iridium/simple_epub_r
 
 /// Factory for creating Iridium reader instances
 class IridiumReaderFactory {
-  static const bool _useSimpleReader = false; // Use local iridium reader for text selection support
+  static const bool _useSimpleReader =
+      false; // Use local iridium reader for text selection support
 
   /// Creates an Iridium reader instance based on configuration
   static IridiumReaderInterface createReader() {

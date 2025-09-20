@@ -31,7 +31,7 @@ void main() {
       expect(lightTheme.tabBarTheme.labelColor, isNotNull);
       expect(lightTheme.tabBarTheme.unselectedLabelColor, isNotNull);
       expect(lightTheme.tabBarTheme.indicator, isA<UnderlineTabIndicator>());
-      
+
       expect(darkTheme.tabBarTheme.indicator, isA<UnderlineTabIndicator>());
     });
   });
