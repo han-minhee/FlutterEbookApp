@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ebook_app/src/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_ebook_app/src/features/common/data/iridium/iridium_reader_factory.dart';
+import 'package:flutter_ebook_app/src/features/common/data/iridium/iridium_reader_interface.dart';
 import 'package:uuid/uuid.dart';
 
 @RoutePage()
